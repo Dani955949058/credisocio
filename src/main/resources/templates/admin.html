@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrediSocio - Mesa de Control y Decisiones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans flex h-screen overflow-hidden">
+
+<aside class="w-64 bg-slate-800 flex flex-col justify-between border-r border-slate-700">
+    <div class="p-6">
+        <div class="text-center py-4 border-b border-slate-700">
+            <h1 class="text-cyan-400 font-extrabold text-xl tracking-wider">🏢 CREDISOCIO</h1>
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Admin Portal</p>
+        </div>
+        <nav class="mt-8 space-y-2">
+            <button onclick="switchTab('panel-control')" id="btn-panel" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-cyan-400 bg-slate-700 font-medium transition duration-200">
+                <span>📊</span> <span>Panel de Control</span>
+            </button>
+            <button onclick="switchTab('solicitudes-activas')" id="btn-activas" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition duration-200">
+                <span>📥</span> <span>Solicitudes Activas</span>
+            </button>
+            <button onclick="switchTab('historial-creditos')" id="btn-historial" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition duration-200">
+                <span>📈</span> <span>Historial de Créditos</span>
+            </button>
+        </nav>
+    </div>
+    <div class="p-6 border-t border-slate-700 text-center">
+        <p class="text-xs text-slate-500">Mesa de Control v3.0 (2026)</p>
+    </div>
+</aside>
+
+<main class="flex-1 flex flex-col overflow-y-auto">
+
+    <div id="section-panel" class="tab-content block">
+        <header class="bg-slate-800/50 backdrop-blur px-8 py-6 border-b border-slate-700 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-white">Bandeja de Decisiones Financieras</h2>
+                <p class="text-sm text-slate-400">Evalúa solicitudes y actualiza el semáforo de riesgo en tiempo real.</p>
+            </div>
+            <a th:href="@{/}" class="bg-rose-600/90 hover:bg-rose-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                Cerrar Sesión
+            </a>
+        </header>
+
+        <div class="p-8 space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl flex flex-col justify-between shadow-lg">
+                    <span class="text-xs font-bold text-slate-400 tracking-wider">TOTAL EVALUACIONES</span>
+                    <span class="text-3xl font-extrabold text-white mt-2" th:text="${totalSolicitudes}">0</span>
+                    <span class="text-xs text-cyan-400 mt-1">Historial acumulado</span>
+                </div>
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl flex flex-col justify-between shadow-lg">
+                    <span class="text-xs font-bold text-slate-400 tracking-wider">PENDIENTES EN COLA</span>
+                    <span class="text-3xl font-extrabold text-amber-500 mt-2" th:text="${pendientes}">0</span>
+                    <span class="text-xs text-amber-400 mt-1 font-semibold">Esperando decisión</span>
+                </div>
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl flex flex-col justify-between shadow-lg">
+                    <span class="text-xs font-bold text-slate-400 tracking-wider">VOLUMEN CAPITAL EVALUADO</span>
+                    <span class="text-3xl font-extrabold text-emerald-400 mt-2" th:text="'S/. ' + ${#numbers.formatDecimal(montoTotal, 1, 'DEFAULT', 2, 'DEFAULT')}">S/. 0.00</span>
+                    <span class="text-xs text-emerald-400 mt-1">Suma de montos pendientes</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
+                <div class="px-6 py-4 border-b border-slate-700">
+                    <h3 class="text-lg font-bold text-white">Cola de Calificación Crediticia</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                        <tr class="bg-slate-900/50 text-cyan-400 font-semibold text-sm border-b border-slate-700">
+                            <th class="py-4 px-6">ID Préstamo</th>
+                            <th class="py-4 px-6">DNI Cliente</th>
+                            <th class="py-4 px-6">Monto Solicitado</th>
+                            <th class="py-4 px-6">Riesgo Semáforo</th>
+                            <th class="py-4 px-6">Estado Actual</th>
+                            <th class="py-4 px-6 text-center">Acciones Directas</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700">
+                        <tr th:each="p, iterStat : ${prestamos}" th:if="${p.estado == 'Pendiente'}" class="hover:bg-slate-700/30 transition">
+                            <td class="py-4 px-6 font-semibold text-slate-400" th:text="${p.id}">ID</td>
+                            <td class="py-4 px-6 font-medium text-slate-200" th:text="${p.dniCliente}">DNI</td>
+                            <td class="py-4 px-6 font-bold text-emerald-400" th:text="'S/. ' + ${#numbers.formatDecimal(p.monto, 1, 'DEFAULT', 2, 'DEFAULT')}">S/. 0.00</td>
+                            <td class="py-4 px-6">
+                                <span th:if="${p.colorSemaforo == 'Verde'}" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400">🟢 Riesgo Bajo</span>
+                                <span th:if="${p.colorSemaforo == 'Ambar'}" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400">🟡 Riesgo Medio</span>
+                                <span th:if="${p.colorSemaforo == 'Rojo'}" class="px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400">🔴 Riesgo Alto</span>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="text-amber-500 font-bold text-xs uppercase" th:text="${p.estado}">Pendiente</span>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="flex justify-center space-x-3">
+                                    <form th:action="@{/admin/decidir}" method="POST">
+                                        <input type="hidden" name="id" th:value="${p.id}" />
+                                        <input type="hidden" name="accion" value="Aprobado" />
+                                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all transform hover:scale-105 active:scale-95">
+                                            Aprobar ✓
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/decidir}" method="POST">
+                                        <input type="hidden" name="id" th:value="${p.id}" />
+                                        <input type="hidden" name="accion" value="Rechazado" />
+                                        <button type="submit" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all transform hover:scale-105 active:scale-95">
+                                            Rechazar ✖
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-activas" class="tab-content hidden">
+        <header class="bg-slate-800/50 backdrop-blur px-8 py-6 border-b border-slate-700 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-white">Solicitudes Activas (Créditos Aprobados)</h2>
+                <p class="text-sm text-slate-400">Monitorea los pagos, saldos, cuotas e historial financiero de los microcréditos vigentes.</p>
+            </div>
+            <a th:href="@{/}" class="bg-rose-600/90 hover:bg-rose-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                Cerrar Sesión
+            </a>
+        </header>
+
+        <div class="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg h-fit">
+                <div class="px-6 py-4 border-b border-slate-700">
+                    <h3 class="text-lg font-bold text-white">Créditos en Curso</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                        <tr class="bg-slate-900/50 text-cyan-400 font-semibold text-sm border-b border-slate-700">
+                            <th class="py-4 px-6">ID</th>
+                            <th class="py-4 px-6">DNI Cliente</th>
+                            <th class="py-4 px-6">Monto Otorgado</th>
+                            <th class="py-4 px-6 text-center">Acción</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700">
+                        <tr th:each="p : ${prestamos}" th:if="${p.estado == 'Aprobado'}" class="hover:bg-slate-700/30 transition">
+                            <td class="py-4 px-6 font-semibold text-slate-400" th:text="${p.id}">ID</td>
+                            <td class="py-4 px-6 font-medium text-slate-200" th:text="${p.dniCliente}">DNI</td>
+                            <td class="py-4 px-6 font-bold text-emerald-400" th:text="'S/. ' + ${#numbers.formatDecimal(p.monto, 1, 'DEFAULT', 2, 'DEFAULT')}">Monto</td>
+                            <td class="py-4 px-6 text-center">
+                                <button th:onclick="verPlanPagos([[${p.id}]], [[${p.dniCliente}]], [[${p.monto}]], [[${p.cuotasTotales}]], [[${p.cuotasPagadas}]], [[${p.valorCuota}]], [[${p.sumaPagosHechos}]], [[${p.saldoPendiente}]])"
+                                        class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow">
+                                    Ver Estado de Pagos 🔍
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="detalle-pagos-vacio" class="bg-slate-800/40 border border-dashed border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center text-center text-slate-500">
+                <span class="text-4xl mb-3">📄</span>
+                <p class="font-semibold text-sm">Selecciona un crédito de la lista para simular y consultar su amortización detallada en tiempo real.</p>
+            </div>
+
+            <div id="detalle-pagos-panel" class="hidden bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-6">
+                <div class="border-b border-slate-700 pb-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white" id="det-id">Crédito REQ-000</h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400">Vigente</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Cliente DNI: <span id="det-dni" class="font-semibold text-slate-200"></span></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                        <span class="text-[10px] text-slate-400 font-bold block">MONTO BASE</span>
+                        <span class="text-sm font-bold text-white" id="det-monto">S/. 0.00</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                        <span class="text-[10px] text-slate-400 font-bold block">INTERÉS INCLUIDO</span>
+                        <span class="text-sm font-bold text-cyan-400">15.0 % (TEA)</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Tiempo de Financiamiento:</span>
+                        <span class="font-semibold text-white"><span id="det-cuotastotales">12</span> meses</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Valor Cuota Mensual:</span>
+                        <span class="font-bold text-white" id="det-valorcuota">S/. 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Cuotas Pagadas a la Fecha:</span>
+                        <span class="font-semibold text-emerald-400"><span id="det-cuotaspagadas">0</span> / 12 cuotas</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-700 pt-4 space-y-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Total de Pagos Realizados:</span>
+                        <span class="font-bold text-emerald-400" id="det-sumapagos">S/. 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Saldo Restante por Pagar:</span>
+                        <span class="font-bold text-rose-400" id="det-saldopendiente">S/. 0.00</span>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400">
+                        <span>PROGRESO DE PAGO</span>
+                        <span id="det-porcentaje">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2">
+                        <div id="det-progreso-barra" class="bg-emerald-500 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-historial" class="tab-content hidden">
+        <header class="bg-slate-800/50 backdrop-blur px-8 py-6 border-b border-slate-700 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-white">Historial de Operaciones Generales</h2>
+                <p class="text-sm text-slate-400">Registro de auditoría con fecha, hora y estado de cada una de las resoluciones del portal.</p>
+            </div>
+            <a th:href="@{/}" class="bg-rose-600/90 hover:bg-rose-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                Cerrar Sesión
+            </a>
+        </header>
+
+        <div class="p-8">
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
+                <div class="px-6 py-4 border-b border-slate-700">
+                    <h3 class="text-lg font-bold text-white">Log Global de Auditoría</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                        <tr class="bg-slate-900/50 text-cyan-400 font-semibold text-sm border-b border-slate-700">
+                            <th class="py-4 px-6">Fecha y Hora</th>
+                            <th class="py-4 px-6">ID Préstamo</th>
+                            <th class="py-4 px-6">DNI Cliente</th>
+                            <th class="py-4 px-6">Monto Solicitado</th>
+                            <th class="py-4 px-6">Semáforo de Riesgo</th>
+                            <th class="py-4 px-6">Estado Final</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700">
+                        <tr th:each="p : ${prestamos}" class="hover:bg-slate-700/30 transition">
+                            <td class="py-4 px-6 text-slate-400 font-mono text-xs" th:text="${p.fechaHora}">00/00/0000 00:00:00</td>
+                            <td class="py-4 px-6 font-semibold text-slate-400" th:text="${p.id}">ID</td>
+                            <td class="py-4 px-6 font-medium text-slate-200" th:text="${p.dniCliente}">DNI</td>
+                            <td class="py-4 px-6 font-bold text-emerald-400" th:text="'S/. ' + ${#numbers.formatDecimal(p.monto, 1, 'DEFAULT', 2, 'DEFAULT')}">Monto</td>
+                            <td class="py-4 px-6">
+                                <span th:if="${p.colorSemaforo == 'Verde'}" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400">🟢 Verde</span>
+                                <span th:if="${p.colorSemaforo == 'Ambar'}" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400">🟡 Ámbar</span>
+                                <span th:if="${p.colorSemaforo == 'Rojo'}" class="px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400">🔴 Rojo</span>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span th:if="${p.estado == 'Aprobado'}" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white">Aprobado ✔</span>
+                                <span th:if="${p.estado == 'Rechazado'}" class="px-3 py-1 rounded-full text-xs font-bold bg-red-600 text-white">Rechazado ✖</span>
+                                <span th:if="${p.estado == 'Pendiente'}" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-600 text-white">Pendiente</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script th:inline="javascript">
+    // 1. Navegación entre pestañas sin recargar la página (Conserva tu lógica funcional e interactiva original)
+    function switchTab(tabId) {
+        // Ocultar todas las secciones de contenido
+        document.querySelectorAll('.tab-content').forEach(section => {
+            section.classList.add('hidden');
+            section.classList.remove('block');
+        });
+
+        // Buscar la sección correcta en base a su ID exacto
+        let targetSectionId = "";
+        if (tabId === 'panel-control') {
+            targetSectionId = 'section-panel';
+        } else if (tabId === 'solicitudes-activas') {
+            targetSectionId = 'section-activas';
+        } else if (tabId === 'historial-creditos') {
+            targetSectionId = 'section-historial';
+        }
+
+        const targetSection = document.getElementById(targetSectionId);
+        if (targetSection) {
+            targetSection.classList.remove('hidden');
+            targetSection.classList.add('block');
+        }
+
+        // Desactivar estilos de selección en todos los botones del menú
+        const btnPanel = document.getElementById('btn-panel');
+        const btnActivas = document.getElementById('btn-activas');
+        const btnHistorial = document.getElementById('btn-historial');
+
+        [btnPanel, btnActivas, btnHistorial].forEach(btn => {
+            btn.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition duration-200 text-left";
+        });
+
+        // Aplicar estilo activo al botón correspondiente
+        let activeBtn;
+        if (tabId === 'panel-control') activeBtn = btnPanel;
+        else if (tabId === 'solicitudes-activas') activeBtn = btnActivas;
+        else if (tabId === 'historial-creditos') activeBtn = btnHistorial;
+
+        if (activeBtn) {
+            activeBtn.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-cyan-400 bg-slate-700 font-medium transition duration-200 text-left";
+        }
+    }
+
+    // 2. Renderizador del plan de pagos con amortizaciones dinámicas (Conserva tu lógica matemática)
+    function verPlanPagos(id, dni, monto, cuotasTotales, cuotasPagadas, valorCuota, sumaPagos, saldoPendiente) {
+        // Ocultar el panel de "seleccione un crédito"
+        const panelVacio = document.getElementById('detalle-pagos-vacio');
+        if (panelVacio) panelVacio.classList.add('hidden');
+
+        // Mostrar el panel detallado
+        const panel = document.getElementById('detalle-pagos-panel');
+        if (panel) panel.classList.remove('hidden');
+
+        // Cargar datos en la UI
+        document.getElementById('det-id').innerText = 'Crédito ' + id;
+        document.getElementById('det-dni').innerText = dni;
+        document.getElementById('det-monto').innerText = 'S/. ' + monto.toFixed(2);
+        document.getElementById('det-cuotastotales').innerText = cuotasTotales;
+        document.getElementById('det-valorcuota').innerText = 'S/. ' + valorCuota.toFixed(2);
+        document.getElementById('det-cuotaspagadas').innerText = cuotasPagadas;
+        document.getElementById('det-sumapagos').innerText = 'S/. ' + sumaPagos.toFixed(2);
+        document.getElementById('det-saldopendiente').innerText = 'S/. ' + saldoPendiente.toFixed(2);
+
+        // Calcular porcentaje del progreso financiero
+        const porcentaje = Math.round((cuotasPagadas / cuotasTotales) * 100);
+        document.getElementById('det-porcentaje').innerText = porcentaje + '%';
+        document.getElementById('det-progreso-barra').style.width = porcentaje + '%';
+    }
+</script>
+</body>
+</html>

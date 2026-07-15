@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CREDISOCIO - Iniciar Sesión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
+
+<!-- Efectos de Luces de Fondo (Neón) -->
+<div class="absolute w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] -top-40 -left-40 pointer-events-none"></div>
+<div class="absolute w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] -bottom-10 -right-10 pointer-events-none"></div>
+
+<!-- TARJETA PRINCIPAL DEL LOGIN (Doble columna: Imagen + Formulario) -->
+<div class="w-full max-w-4xl bg-slate-900/50 border border-slate-800/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md grid grid-cols-1 md:grid-cols-12 z-10">
+
+    <!-- SECCIÓN IZQUIERDA: TU IMAGEN SELECCIONADA -->
+    <div class="hidden md:flex md:col-span-6 bg-[#00528a] flex-col justify-end p-8 relative overflow-hidden min-h-[350px] md:min-h-full">
+
+        <!-- Apuntando exactamente a credi-socio3.jpg -->
+        <img th:src="@{/images/credi-socio3.jpg}"
+             alt="Caja Arequipa - Emprendimiento"
+             class="absolute inset-0 w-full h-full object-cover object-center z-0" />
+
+        <!-- Capa oscura de gradiente para dar contraste al texto inferior -->
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent z-10"></div>
+
+        <!-- Brand messaging institucional sobre la imagen -->
+        <div class="relative z-20 space-y-2">
+                <span class="px-3 py-1 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold rounded-full uppercase tracking-widest">
+                    Campaña Emprendedores
+                </span>
+            <h2 class="text-2xl font-black text-white leading-tight">
+                Con la frente en alto.
+            </h2>
+            <p class="text-xs text-slate-300">
+                Tu esfuerzo diario mueve al país. Nosotros te brindamos el respaldo financiero que necesitas para seguir creciendo.
+            </p>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DERECHA: FORMULARIO DE ACCESO (Mantiene toda tu lógica original) -->
+    <div class="col-span-1 md:col-span-6 p-8 sm:p-10 flex flex-col justify-center bg-slate-900/40 z-20">
+
+        <!-- Logo e Identidad (De tu último código) -->
+        <div class="text-center md:text-left mb-8">
+            <h1 class="text-2xl font-extrabold text-white tracking-wider">🏢 CREDISOCIO</h1>
+            <p class="text-cyan-400 font-medium text-sm mt-1">Portal de Crédito Digital</p>
+        </div>
+
+        <!-- Alerta de error (Usando tu variable ${error}) -->
+        <div th:if="${error}" class="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-xs flex items-center space-x-2">
+            <span>⚠️</span>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Formulario de Acceso -->
+        <form th:action="@{/login}" method="POST" class="space-y-6">
+            <!-- Campo DNI (name="dni") -->
+            <div class="space-y-2">
+                <label for="dni" class="text-xs font-bold text-slate-400 tracking-wide uppercase block">DNI</label>
+                <input type="text" id="dni" name="dni" required placeholder="Ingresa tu DNI"
+                       class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+            </div>
+
+            <!-- Campo Contraseña -->
+            <div class="space-y-2">
+                <label for="password" class="text-xs font-bold text-slate-400 tracking-wide uppercase block">Contraseña</label>
+                <input type="password" id="password" name="password" required placeholder="Ingresa tu contraseña"
+                       class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+            </div>
+
+            <!-- Botón de Ingreso con gradiente original -->
+            <button type="submit"
+                    class="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-bold text-sm rounded-xl transition shadow-lg active:scale-95">
+                Ingresar al Portal
+            </button>
+        </form>
+
+        <!-- Registro / Crear Cuenta -->
+        <div class="mt-6 pt-6 border-t border-slate-800 text-center space-y-4">
+            <p class="text-xs text-slate-400">¿No tienes una cuenta aún?</p>
+            <a th:href="@{/registro}" class="inline-block px-6 py-2 border border-slate-700 hover:border-cyan-500 text-cyan-400 hover:text-cyan-300 font-bold text-xs uppercase tracking-wider rounded-xl transition">
+                Registrarse aquí ✨
+            </a>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

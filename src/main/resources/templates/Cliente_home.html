@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CREDISOCIO - Solicita tu Crédito</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans flex flex-col h-screen overflow-hidden relative">
+
+<!-- HEADER / BARRA SUPERIOR -->
+<header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 px-8 py-4 flex justify-between items-center z-10">
+    <!-- CAMBIO AQUÍ: Header con CREDISOCIO -->
+    <div class="flex items-center space-x-2">
+        <span class="text-xl">🏢</span>
+        <span class="font-bold text-white tracking-wider text-sm">CREDISOCIO</span>
+    </div>
+    <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2 bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl">
+            <span class="text-xs text-slate-400">👤 Cliente: <strong class="text-white" th:text="${usuarioNombre}">Admin</strong></span>
+            <span class="text-slate-600">|</span>
+            <span class="text-xs text-slate-400">DNI: <strong class="text-white" th:text="${usuarioDni}">1234</strong></span>
+            <span class="text-slate-600">|</span>
+            <span class="text-xs text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded-md">Código de Verificación: <span th:text="${codigoVerificacion}">000</span></span>
+        </div>
+        <a th:href="@{/}" class="bg-rose-600/95 hover:bg-rose-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
+            Cerrar Sesión
+        </a>
+    </div>
+</header>
+
+<!-- ÁREA DE CONTENIDO -->
+<main class="flex-1 p-8 space-y-6 overflow-y-auto max-w-7xl mx-auto w-full z-10">
+
+    <div th:if="${success}" class="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-2xl text-sm flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl">🚀</span>
+            <span>¡Solicitud enviada con éxito! Se ha generado automáticamente un nuevo código de verificación para tus siguientes operaciones.</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-xs font-bold text-slate-400 hover:text-white">Cerrar</button>
+    </div>
+
+    <div th:if="${error == 'codigo_incorrecto'}" class="p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-2xl text-sm flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl">⚠️</span>
+            <span>¡Error! El código de verificación ingresado es incorrecto o ya ha expirado. Verifica tu código activo arriba.</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-xs font-bold text-slate-400 hover:text-white">Cerrar</button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Columna Izquierda (Historial) -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Banner de Promoción -->
+            <div class="bg-gradient-to-r from-cyan-950/40 to-slate-900 border border-slate-800 rounded-3xl p-6 relative overflow-hidden shadow-xl">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="space-y-2">
+                        <span class="bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Campaña Emprendedor 2026</span>
+                        <h2 class="text-xl font-extrabold text-white">Cumple tus metas hoy mismo</h2>
+                        <p class="text-slate-300 text-xs max-w-md">Solicita tu evaluación digital de forma instantánea y segura usando tu código dinámico de verificación.</p>
+                    </div>
+                    <div class="w-24 h-24 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center text-4xl shadow-inner">
+                        💼
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historial -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Mis Trámites de Crédito</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                        <tr class="bg-slate-950/50 text-cyan-400 border-b border-slate-800">
+                            <th class="p-3">ID Trámite</th>
+                            <th class="p-3">Monto Evaluado</th>
+                            <th class="p-3">Riesgo Calculado</th>
+                            <th class="p-3">Estado actual</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                        <tr th:each="p : ${listaPrestamos}" th:if="${p.dniCliente == usuarioDni}" class="hover:bg-slate-800/20 transition">
+                            <td class="p-3 font-semibold text-slate-400" th:text="${p.id}">ID</td>
+                            <td class="p-3 font-bold text-white" th:text="'S/. ' + ${#numbers.formatDecimal(p.monto, 1, 'DEFAULT', 2, 'DEFAULT')}">Monto</td>
+                            <td class="p-3">
+                                <span th:if="${p.colorSemaforo == 'Verde'}" class="text-emerald-400 font-semibold">🟢 Bajo</span>
+                                <span th:if="${p.colorSemaforo == 'Ambar'}" class="text-amber-400 font-semibold">🟡 Medio</span>
+                                <span th:if="${p.colorSemaforo == 'Rojo'}" class="text-red-400 font-semibold">🔴 Alto</span>
+                            </td>
+                            <td class="p-3">
+                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold"
+                                              th:classappend="${p.estado == 'Aprobado' ? 'bg-emerald-500/10 text-emerald-400' : (p.estado == 'Rechazado' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400')}"
+                                              th:text="${p.estado}">Pendiente</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha (Formulario) -->
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col justify-between space-y-6">
+            <div>
+                <div class="border-b border-slate-800 pb-4 mb-4">
+                    <h3 class="text-md font-bold text-white">Solicitar Crédito</h3>
+                    <p class="text-[11px] text-slate-400 mt-1">Ingresa tus datos y tu código activo de verificación.</p>
+                </div>
+
+                <form th:action="@{/admin/solicitar}" method="POST" class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">DNI</label>
+                        <input type="text" name="dni" th:value="${usuarioDni}" readonly
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-400 focus:outline-none cursor-not-allowed" />
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Nombres y Apellidos</label>
+                        <input type="text" name="nombres" th:value="${usuarioNombre}" readonly
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-400 focus:outline-none cursor-not-allowed" />
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">¿Para qué usará este monto?</label>
+                        <select name="proposito" required
+                                class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none">
+                            <option value="Negocio">Para mi Negocio</option>
+                            <option value="Empresa">Para mi Empresa</option>
+                            <option value="Casa">Para mi Casa</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Monto a Solicitar</label>
+                        <input type="number" id="monto" name="monto" min="1000" max="80000" step="500" required value="10000" oninput="calcularCuotaSimulada()"
+                               class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-bold text-white focus:outline-none" />
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Plazo de Pago (Meses)</label>
+                        <select id="meses" name="meses" onchange="calcularCuotaSimulada()"
+                                class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none">
+                            <option value="12" selected>12 Meses</option>
+                            <option value="24">24 Meses</option>
+                            <option value="36">36 Meses</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1 bg-amber-500/5 border border-amber-500/20 p-3 rounded-xl">
+                        <label class="text-[10px] font-bold text-amber-400 uppercase block">Ingresa tu Código de Verificación</label>
+                        <input type="text" name="codigoIngresado" required maxlength="3" placeholder="Ej: 542"
+                               class="w-full px-3 py-2.5 bg-slate-950 border border-amber-500/30 rounded-lg text-sm font-bold text-center tracking-widest text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-700" />
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex justify-between items-center text-xs">
+                        <span class="text-slate-400">Cuota Estimada:</span>
+                        <span class="font-extrabold text-emerald-400" id="sim-cuota">S/. 0.00</span>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full py-3 bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition">
+                        Enviar Solicitud con mi Código 🔒
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<script>
+    function calcularCuotaSimulada() {
+        const monto = parseFloat(document.getElementById('monto').value) || 0;
+        const meses = parseInt(document.getElementById('meses').value) || 12;
+        const tasaInteresAnual = 0.15;
+
+        if (monto > 0) {
+            const montoConInteres = monto * (1 + tasaInteresAnual);
+            const valorCuota = montoConInteres / meses;
+            document.getElementById('sim-cuota').innerText = 'S/. ' + valorCuota.toFixed(2);
+        } else {
+            document.getElementById('sim-cuota').innerText = 'S/. 0.00';
+        }
+    }
+    window.onload = calcularCuotaSimulada;
+</script>
+</body>
+</html>
