@@ -108,7 +108,14 @@ public class LoginController {
         model.addAttribute("usuarioDni", usuarioDni);
         model.addAttribute("codigoVerificacion", codigoVerificacion);
 
-        model.addAttribute("listaPrestamos", AdminController.getListaPrestamos());
+        // EVITAR CAÍDA SI EL ADMIN CONTROLLER NO TIENE LISTA INICIALIZADA
+        try {
+            model.addAttribute("listaPrestamos", AdminController.getListaPrestamos());
+        } catch (Exception e) {
+            System.out.println("Error al cargar préstamos: " + e.getMessage());
+            model.addAttribute("listaPrestamos", new java.util.ArrayList<>()); // Mandamos lista vacía para que no explote
+        }
+
         return "cliente_home";
     }
 }
